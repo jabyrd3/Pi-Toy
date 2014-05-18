@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+    <head>
+        <style type="text/css">
+            *{
+                font-family: Helvetica, Arial, Sans-serif;
+                text-align: center;
+            }
+            h2{
+                color: red;
+                padding-bottom: 12px;
+                border-bottom: 2px solid black;
+                margin-bottom: 0px;
+            }
+            h3{
+                margin-top; 0px;
+                padding-top: 0px;
+                color: black;
+            }
+            canvas{
+                float:left;
+            }
+            div{
+                float: left;
+                
+            }
+            p{
+                width: 90%;
+            }
+            canvas{
+                float:left;
+            }
+        </style>
+        <link src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
+    </head>
+    <body>
+        <div class="container">
+            <canvas width="520" height="500" id="monte-1">
+                
+            </canvas>
+            <div>
+                <h2 id="numerator"></h2>
+                <h3 id="denominator"></h3>
+                <h2 id="pi"></h2>
+                <p id="results"></p>
+                <h3 id="average"></h3>
+            </div>
+            <button id="barton">iterate</button>
+        </div>
+        <script type="text/javascript">
+        var canvas = document.getElementById('monte-1');
+        var context = canvas.getContext('2d');
+        var width = canvas.width;
+        var height = canvas.height;
+        var matchCount = 1000;
+        var panelWidth = width / 13;
+        var panels = [];
+        var matchSticks = [];
+        var results = [];
+
+        function average(){
+            console.log(parseFloat(x))
+            var average = 0;
+            for(x = 0; x < results.length; x++){
+                average += parseFloat(results[x]);
+            }
+            average = average / results.length;
+            return average;
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        }
+
+        function matchStick(){
+            this.length = 20;
+            this.center = [getRandomInt(0,520), getRandomInt(0,500)];
+            this.rotation = getRandomInt(0, 360);
+        }
+        function panel(){
+            this.width = panelWidth;
+            this.height = height;
+        }
+        function collider(start, end, x){
+            if(start[0] < x && end[0] > x){
+                //console.log('first case', start,end,x);
+                return true;
+            }else if(start[0] > x && end[0] < x){
+                //console.log('second case', start,end,x);
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        function iterate(){
+            context.clearRect(0,0, canvas.width, canvas.height);
+            var panelWalker = 0;
+            var collisions = 0;
+            for(i = 0; i <= 13; i++){
+                var poonel = new panel();
+                poonel.x = panelWalker;
+                panels.push(poonel);
+
+                context.beginPath();
+                context.moveTo(panelWalker, 0);
+                context.lineTo(panelWalker, poonel.height);
+                context.stroke();
+
+                panelWalker += poonel.width;
+            }
+
+            for (i = 0; i <= matchCount; i++){
+                var matchDirk = new matchStick();
+                matchDirk.startPoint = [Math.cos( matchDirk.rotation ) * (-matchDirk.length / 2) + matchDirk.center[0],  Math.sin( matchDirk.rotation ) * (-matchDirk.length / 2) + matchDirk.center[1]];
+                matchDirk.endPoint = [Math.cos( matchDirk.rotation ) * (matchDirk.length / 2) + matchDirk.center[0], Math.sin( matchDirk.rotation ) * (matchDirk.length / 2) + matchDirk.center[1]];
+                matchSticks.push(matchDirk);
+
+                context.beginPath();
+                context.moveTo( matchDirk.startPoint[0], matchDirk.startPoint[1]);
+                context.lineTo( matchDirk.endPoint[0], matchDirk.endPoint[1]);
+                for(x = 0; x < panels.length; x++){
+                    if(collider(matchDirk.startPoint, matchDirk.endPoint, panels[x].x) !== false){
+                        context.strokeStyle = "#ff0000";
+                        collisions++;
+                        break;
+                    }else{
+                        context.strokeStyle = "#000000";
+                    }
+                }
+                context.stroke();
+                context.closePath();
+            }
+            console.log('collisions', 100000/collisions);
+            document.getElementById('numerator').innerHTML = collisions.toString();
+            document.getElementById('denominator').innerHTML = matchCount.toString();
+            document.getElementById('pi').innerHTML = (matchCount / collisions).toString();
+            results.push(' ' + (matchCount / collisions).toString());
+            document.getElementById('results').innerHTML = results;
+            document.getElementById('average').innerHTML = average().toString();
+        }
+
+        iterate();
+        document.getElementById('barton').onclick = iterate;
+        </script>
+    </body>
+</html>
